@@ -1,0 +1,13 @@
+from xlpython import *
+from fuzzywuzzy import fuzz, process
+
+@xlfunc
+def alok_match_perc(x,y):
+	return fuzz.ratio(x,y)
+	
+	
+@xlfunc
+def alok_match_options(x,y):
+	return process.extract(x,y,limit = 2)
+	
+	
