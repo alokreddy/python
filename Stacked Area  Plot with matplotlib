@@ -1,0 +1,14 @@
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+
+plt.stackplot(arange(12)+1,
+          [chickenpox, mumps, measles], 
+          colors=['#377EB8','#55BA87','#7E1137'])
+plt.xlim(1,12)
+
+# creating the legend manually
+plt.legend([mpatches.Patch(color='#377EB8'),  
+            mpatches.Patch(color='#55BA87'), 
+            mpatches.Patch(color='#7E1137')], 
+           ['chickenpox','mumps','measles'])
+plt.show()
