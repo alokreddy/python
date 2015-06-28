@@ -1,0 +1,40 @@
+Module: re
+Methods:  compile-->search-->group/s
+          compile-->findall-->group/s
+
+
+import re
+
+PhNumber = re.compile(r'\d\d\d-\d\d\d-\d\d\d\d')
+mo = PhNumber.search('SearchString')
+print('Phone number found: ' + mo.group())
+
+########################################################################
+
+import re
+
+#using the pipe to find either of two words
+
+nameRegex = re.compile (r'Name1|Name2')
+mo1 = nameRegex.search ('Name1 and Name2')
+mo1.group()
+#the output of this will be the first name that matches in this case it is 'Name1'
+
+#################################################################################
+
+import re
+
+stringRegex = re.compile(r'(String){3}')
+mo1 = stringRegex.search('String')
+mo1.group()
+#Output: None, if there are three repetitions of the same 'String' then the output would be 'StringStringString'
+
+
+#######################################################################################################
+
+import re
+
+phRegex = re.compile(r'\d\d\d-\d\d\d-\d\d\d\d')
+mo = phRegex.findall('String')
+
+#the output will be all the strings, numbers, etc... matching the regex patterns
