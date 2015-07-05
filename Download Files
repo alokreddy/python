@@ -1,0 +1,5 @@
+import urllib
+
+url = 'http://www.renderx.com/files/demos/examples/diveintopython.pdf'
+ 
+urllib.urlretrieve(url, "DP.pdf")
