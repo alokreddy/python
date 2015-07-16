@@ -1,0 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jul 16 16:58:42 2015
+
+@author: http://sebsauvage.net/python/snyppets/#sendftp
+"""
+
+import os.path
+def processDirectory ( args, dirname, filenames ):
+    print 'Directory',dirname
+    for filename in filenames:
+        print ' File',filename
+
+os.path.walk(r'C:\Users\alokkt\Desktop', processDirectory, None )
