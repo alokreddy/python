@@ -1,0 +1,27 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Aug 10 17:45:20 2015
+
+@author: ReddyAl
+"""
+
+#import the excel data into a panda dataframe
+import pandas as pd
+from pandas import ExcelWriter
+#load the data into a data frame
+df = pd.read_excel(r"C:\Users\ReddyAl\Documents\data.xlsx")
+
+#remove the spaces from the column headings (space is replaced with _ in the column heads)
+df.columns = [c.replace(' ', '_') for c in df.columns]
+
+df.head()
+
+df1 = df.iloc[:,7:16]
+df2 = df1.groupby(['Job_Level']).describe()
+
+writer = ExcelWriter(r'M:\Job_Level analysis.xlsx')
+
+df.to_excel(writer, 'Job_Level')
+df1.to_excel(writer, 'Job_Level Consolidated')
+df2.to_excel(writer, 'Job_Level Descriptive Stats')
+writer.save()
