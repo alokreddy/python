@@ -1,0 +1,156 @@
+from xlpython import *
+
+
+@xlsub
+@xlarg("app", vba="Application")
+def dataAnalysis_data(app):
+    import pandas as pd
+    from xlwings import Workbook, Range
+    
+    df = pd.read_excel(r"ER DATA.XLSX")
+    dfm = pd.read_excel(r"MARKET DATA.XLSX")
+    job_attr = pd.read_excel(r'PATH TO ATTRIB FILE.XLSX')
+    job_attr.columns = [c.replace(' ', '_') for c in job_attr.columns]
+
+    df.columns = [c.replace(' ', '_') for c in df.columns]
+    df = df[df['Assignment_Category'].isin(['Regular'])]
+    df.rename(columns={'Payroll_Country':'Country'}, inplace = True)
+    df['Country'] = df.Country.str.upper()
+    df['AnnualSalary'] = df.Annual_Salary_If_Full_time.div(1000)
+
+    df1 = df.groupby(['PID', 'Country', 'SBU', 'Job_Code', 'Job_Title_Description','Career_Band','Career_Level'])['AnnualSalary'].median()
+    df1 = pd.DataFrame(df1)
+    df1.reset_index(inplace = True)
+
+
+    #dfm['Market 100%'] = dfm['Market_Base_Salary_50th_(Median)']*1000
+    dfm.columns = [c.replace(' ', '_') for c in dfm.columns]
+    dfm.rename(columns = {'Job_Code_Key':'Country','Market_Base_Salary_50th_(Median)': 'Market_Median'}, inplace = True)
+    dfm = dfm.groupby([dfm.Country, dfm.Job_Code])['Market_Median'].mean()
+    dfm = pd.DataFrame(dfm)
+    dfm.reset_index(inplace = True)
+    
+
+    result = pd.merge(df1,dfm,how ='left', on = ['Country','Job_Code'])
+    
+    result['Compa_Ratio'] = result.AnnualSalary.divide(result.Market_Median)
+    result['Status'] = 'Check'
+    result.loc[result.Compa_Ratio <= 0.80, 'Status'] = 'Below Low'
+    result.loc[(result.Compa_Ratio <= 0.95) & (result.Compa_Ratio > 0.80), 'Status'] = 'Low - Middle'
+    result.loc[(result.Compa_Ratio <= 1.05) & (result.Compa_Ratio > 0.95), 'Status'] = 'At Market'
+    result.loc[(result.Compa_Ratio <= 1.20) & (result.Compa_Ratio > 1.05), 'Status'] = 'Middle - High'
+    result.loc[result.Compa_Ratio > 1.20, 'Status'] = 'Above High'
+
+    result_with_attr = pd.merge(result,job_attr[['Job_Code', 'GLOBAL_GRADE','LOCAL_GRADE_-_India']],how ='left', on = ['Job_Code'])
+    result_with_attr = result_with_attr[['PID', 'Country', 'SBU', 'Job_Code', 'Job_Title_Description', 'GLOBAL_GRADE', 'LOCAL_GRADE_-_India','Career_Band', 'Career_Level', 'AnnualSalary', 'Market_Median', 'Compa_Ratio', 'Status']]
+
+    Workbook(r'C:\Users\**USERNAME**\Desktop\DBoard\Dashboard.xlsm')
+    #Sheet('data1').clear()
+    Range('data1', 'A2', index = False, header = False).value = result_with_attr
+    
+    
+    countries = pd.DataFrame((df1.Country.unique()).tolist())
+    SBU = pd.DataFrame((df1.SBU.unique()).tolist())        
+    JobCode = pd.DataFrame((df1.Job_Code.unique()).tolist())
+    PID = pd.DataFrame((df1.PID.unique()).tolist())  
+    #   
+
+    Range('data1', 'O2', index = False, header = False).value = countries
+    Range('data1', 'Q2', index = False, header = False).value = SBU
+    Range('data1', 'S2', index = False, header = False).value = JobCode
+    Range('data1', 'U2', index = False, header = False).value = PID
+    
+        
+    dfm['Market 80%'] = dfm['Market_Median']*0.8
+    dfm['Market 90%'] = dfm['Market_Median']*0.9
+    dfm['Market 110%'] = dfm['Market_Median']*1.1
+    dfm['Market 120%'] = dfm['Market_Median']*1.2
+    
+    dfm2 = pd.melt(dfm, id_vars = ['Country','Job_Code'], value_vars = ['Market 80%','Market 90%','Market_Median','Market 110%','Market 120%'])
+    
+    #    str1 = ",".join(df.columns)
+    
+    #x = Range('DashBoard', 'A37').value
+    #    if x is None:
+    #        x = 'Job_Code'
+    
+    df_series = df.groupby(['Country', 'Job_Code'])['AnnualSalary'].describe()
+    df2 = pd.DataFrame(df_series)
+    df2.reset_index(inplace = True)
+    df2.columns = ['Country', 'Job_Code', 'Measure', 'Value']
+    dfm2.columns = ['Country', 'Job_Code', 'Measure', 'Value']
+    #dfa = pd.merge(df2,dfm2,how ='left', on = ['Country','Job_Code'])
+    
+    dfa = df2.append(dfm2)    
+    
+    Range('data1', 'W2', index = False, header = False).value = dfa
+    #dfm1 = pd.melt(df1, id_vars = ['Country','Job_Code'], value_vars = ['Market 80%','Market 90%','Mat','Market 110%','Market 120%'])
+    
+#    temp1 = df.Country.unique()
+#    temp2 = temp1.tolist()
+#    df_numeric_only = df.loc[:,df.dtypes == np.float64]
+    
+#    countries = pd.DataFrame(temp2)     
+        #Range('data1', 'A1').value = 'Country'
+    #Range('data1', 'B1').value = x
+    #Range('data1', 'C1').value = 'Measure'
+    #Range('data1', 'D1').value = 'Value'
+#    Range('data1', 'A:D').autofit('c')
+#    Range('Data1', 'G1').value = countries
+#    Range('Data1', 'K1').value = pd.DataFrame(df.columns)
+#    Range('Data1', 'O1').value = pd.DataFrame(df_numeric_only.columns)
+    #wb.save()    
+
+  
+@xlsub
+@xlarg("app", vba="Application")
+def dataAnalysis_Desriptive(app):
+    #import pandas as pd
+    from pandas import ExcelWriter
+    #from xlwings import Workbook, Sheet, Range
+    #from datetime import datetime
+    import time
+    #import os
+    #load the data into a data frame
+    df = pd.read_excel(r"ER DATA.XLSX")
+    
+
+    #remove the spaces from the column headings (space is replaced with _ in the column heads)
+    df.columns = [c.replace(' ', '_') for c in df.columns]
+    df = df[df['Assignment_Category'].isin(['Regular'])]
+    
+    
+    from openpyxl import load_workbook
+    dbwb = load_workbook('C:\Users\**USER NAME**\Desktop\DBoard\Dashboard.xlsm')
+    dbws = dbwb["Reports"]
+    x = dbws['B1'].value
+    if x is None:
+        x = 'Job_Code'
+    country = dbws['B2'].value
+    if country is None:
+        country = 'India'
+    
+    temp1 = df.Employee_Location_Country_Name.unique()
+    temp2 = temp1.tolist()
+    
+    
+  
+    if temp2.__contains__(country):
+        df = df[df["Employee_Location_Country_Name"] == country]
+        #df.head()
+    
+        #df1 = df.iloc[:,7:16]
+        df1 = df.groupby(['Employee_Location_Country_Name', x,])['Annual_Salary_If_Full_time'].describe()
+        #df1.to_frame(name = 'df2')
+        filename = country + '_' + x + "_" + time.strftime('%Y-%m-%d-%H-%M-%S') #str(datetime.now())
+    
+        writer = ExcelWriter("C:\Users\**USERNAME**\Desktop\DBoard\\" + filename + ".xlsx")
+    
+        df1.to_frame().to_excel(writer, country + " " +x, merge_cells = False)
+        writer.save()
+        wb = Workbook(r"C:\Users\**USERNAME**\Desktop\DBoard\\" + filename + ".xlsx")
+        Range(country + " " +x, 'A:Z').autofit('c')
+        wb.save
+        #wb.close
+    else:
+        pass
