@@ -1,0 +1,56 @@
+
+# coding: utf-8
+
+# In[1]:
+
+import pandas as pd
+import numpy as np
+from xlwings import Sheet, Range, Workbook
+
+
+# In[2]:
+
+#path to file
+df = pd.read_excel(r"//PATH TO FILE//")
+
+
+# In[3]:
+
+#replace the column name spaces with underscores so that they will show up in the suggestions dropdown of the Ipython Notebook
+df.columns = [c.replace(' ',"_") for c in df.columns]
+
+Change the encoding of the column values to get the list with out "u"
+x = df.columns[0].encode("utf-8")
+
+#number of parts the data frame or the list needs to be split into
+n = 7
+
+# change the dataframe column into a list
+seq = list(df[x])
+
+#randomize the list ### if there is no neeed to randomize the list u may delete this step
+np.random.shuffle(seq)
+
+# the actual split
+lists1 = [seq[i:i+n] for i  in range(0, len(seq), n)]
+
+# the split list is converted into a dataframe
+listsdf = pd.DataFrame(lists1).reset_index()
+
+
+# In[78]:
+
+# a dict is created to hold the split dataframes
+
+dataframesDict = dict()
+
+# calling workbook function from the xlwings module
+Workbook()
+
+#loading the dataframes into the dict
+
+for i in range(0,n):
+    if Sheet.count() < n:
+        Sheet.add()
+    doubles[i] = df.loc[df.Employee_Number.isin(list(listsdf[listsdf.columns[i+1]]))]
+    Range(i,"A1").value = doubles[i]
