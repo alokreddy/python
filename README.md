@@ -1,4 +1,10 @@
 python
 ======
 
-The repository will record the steps I took enroute learning python.
+Python scripts.
+
+Focus areas:
+  Pandas
+  xlwings
+  numpy
+  
