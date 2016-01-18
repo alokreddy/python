@@ -1,0 +1,85 @@
+
+# coding: utf-8
+
+# In[42]:
+
+import pandas as pd
+import json
+
+def find_element(children_list,name):
+    """
+    Find element in children list
+    if exists or return none
+    """
+    for i in children_list:
+        if i["name"] == name:
+            return i
+    #If not found return None
+    return None
+
+def add_node(path,size,nest):
+    """
+    The path is a list.  Each element is a name that corresponds 
+    to a level in the final nested dictionary.  
+    """
+
+    #Get first name from path
+    this_name = path.pop(0)
+
+    #Does the element exist already?
+    element = find_element(nest["children"], this_name)
+
+    #If the element exists, we can use it, otherwise we need to create a new one
+    if element:
+
+        if len(path)>0:
+            add_node(path,size, element)
+
+    #Else it does not exist so create it and return its children
+    else:
+
+        if len(path) == 0:
+            nest["children"].append({"name": this_name, "size": size})
+        else:
+            #Add new element
+            nest["children"].append({"name": this_name, "children":[]})
+
+            #Get added element 
+            element = nest["children"][-1]
+
+            #Still elements of path left so recurse
+            add_node(path,size, element)
+
+
+# In[59]:
+
+#df = pd.read_json(r'PATH')
+
+df = pd.read_excel(r'PATH')
+
+df.columns = [c.replace(" ","_") for c in df.columns]
+
+# order in the groupby here matters, it determines the json nesting
+# the groupby call makes a pandas series by grouping 'the_parent' and 'the_child', while summing the numerical column 'child_size'
+df1 = df.groupby([COLUMN_NAMES_LIST])['Count'].count()
+df1 = df1.reset_index()
+
+d = {"name": "PAREXEL",
+"children": []}
+
+attributes_list = [COLUMN_NAME_LIST] 
+
+
+levels = attributes_list
+for row in df1.iterrows():
+    r = row[1]
+    path = list(r[levels])
+    size = r["Count"]
+    add_node(path,size,d)
+
+print json.dumps(d, sort_keys=False,
+              indent=2)
+
+import json
+with open('flare.json', 'w') as outfile:
+    json.dump(d, outfile)
