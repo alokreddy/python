@@ -1,0 +1,5 @@
+import xlrd
+
+wb = xlrd.open_workbook('foo.xls')
+sh = wb.sheet_by_index(2)   
+lookup = dict(zip(sh.col_values(2, 0, 138), sh.col_values(0, 0, 138)))
