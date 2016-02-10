@@ -1,0 +1,6 @@
+#Avoid IPython Notebook output cell truncating contents of my list
+
+from pandas import DataFrame
+from IPython.display import HTML
+HTML(DataFrame(myList).to_html())
+
