@@ -1,0 +1,4 @@
+import simplejson
+f = open('output.txt', 'w')
+simplejson.dump(temp, f)
+f.close()
