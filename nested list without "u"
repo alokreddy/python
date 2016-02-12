@@ -1,4 +1,30 @@
+import pandas as pd
+from xlwings import Workbook, Range
 import simplejson
+
+
+ff = pd.read_excel(r"C:\Users\ReddyAl\Desktop\Promotions Sankey\Focal 2015 All Emps.xlsx")
+er = pd.read_excel(r"C:\Users\ReddyAl\Desktop\Promotions Sankey\Oracle Employee Report 08-Feb-2016.xlsx")
+
+ff.columns = [c.replace(" ","_") for c in ff.columns]
+er.columns = [c.replace(" ","_") for c in er.columns]
+mdf = pd.merge(ff,er,how ="left",on = "PID")
+mdf.columns = [c.replace(" ","_") for c in mdf.columns]
+mdf.columns = [c.replace("%","Pcent") for c in mdf.columns]
+
+#Workbook()
+
+con = pd.DataFrame(mdf.groupby(["Career_Band","New_Career_band"])["PID"].count())
+
+#Alternate method to achive the same as below
+#temp = map(list, con.values)
+
+temp=[]
+
+for row in con.iterrows():
+    index, data = row
+    temp.append(data.tolist())
+
 f = open('output.txt', 'w')
 simplejson.dump(temp, f)
 f.close()
