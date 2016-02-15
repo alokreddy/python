@@ -1,0 +1,3 @@
+def rdxl(path,df_name):
+    df_name = pd.DataFrame()
+    df_name = pd.read_excel(path)
