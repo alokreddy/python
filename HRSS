@@ -1,0 +1,59 @@
+import pandas as pd
+from xlwings import Workbook, Range
+from IPython.display import HTML
+import xlrd
+
+janhc = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\HRSS Turnover survey 2016\141 009a Worldwide FTE and HC Report with HCC LCC segments as 0n 01-Jan-2015.XLSX")
+dechc = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\HRSS Turnover survey 2016\153 009a FTE Headcount Report with continent Nickname and Orgn Country 31-Dec-2015.xlsx")
+turn = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\HRSS Turnover survey 2016\009cc Termination Report with Reason Jan 2015 to Dec 2015.xlsx")
+dechc.columns = [c.replace(" ","_") for c in dechc.columns]
+janhc.columns = [c.replace(" ","_") for c in janhc.columns]
+turn.columns = [c.replace(" ","_") for c in turn.columns]
+
+
+ma = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\HRSS Turnover survey 2016\Master Job Attributes File.XLSX", sheetname = "qry_BUILDING MASTER", index_col="Job Code")
+ma_old = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\HRSS Turnover survey 2016\Master Job Attributes File.XLSX", sheetname = "Retired Jobs", index_col="Job Code")
+
+attributes = pd.concat([ma,ma_old], join = "inner")
+attributes.rename(columns={'Job Title':'Job_Title_Description'}, inplace= True)
+
+#new dataframes created after merging data from headcount report/turnover report and attribute file
+janhc_a = pd.merge(janhc,attributes,how = "left", on = ['Job_Title_Description'])
+dechc_a = pd.merge(dechc,attributes,how = "left", on = ['Job_Title_Description'])
+turn_a = pd.merge(turn,attributes,how = "left", on = ['Job_Title_Description'])
+
+frame_a = [janhc_a, dechc_a, turn_a]
+for fr in frame_a:
+    for cl in ["P1", "S1", "T1", "U1", "W1"]:
+        fr.loc[fr['CAREER LEVEL'] == cl, 'alert_us'] = 'Entry'
+    for cl in ["P3" , "P2" , "S2" , "S3" , "T2" , "T3" , "U2" , "U3" , "W2" , "W3" , "W4"]:
+        fr.loc[fr['CAREER LEVEL'] == cl, 'alert_us'] = 'Other professional/non managerial'
+    for cl in ["M1" , "M2" , "T4"]:
+        fr.loc[fr['CAREER LEVEL'] == cl, 'alert_us'] = 'First line management (supervisors or managers)'
+    for cl in ["M3" , "M4" , "P4" , "P5" , "P6" , "S4" , "S5" , "S6" , "U4"]:
+        fr.loc[fr['CAREER LEVEL'] == cl, 'alert_us'] = 'Middle Management'
+    for cl in ["EX"]:
+        fr.loc[fr['CAREER LEVEL'] == cl, 'alert_us'] = 'Top Management'
+    for cl in ["P1", "S1", "T1", "U1", "W1","P3" , "P2" , "S2" , "S3" , "T2" , "T3" , "U2" , "U3" , "W2" , "W3" , "W4"]:
+        fr.loc[fr['CAREER LEVEL'] == cl, 'alert'] = 'Other professional/non managerial'
+    for cl in ["M1" , "M2" , "T4"]:
+        fr.loc[fr['CAREER LEVEL'] == cl, 'alert'] = 'First line management (supervisors or managers)'
+    for cl in ["M3" , "M4" , "P4" , "P5" , "P6" , "S4" , "S5" , "S6" , "U4"]:
+        fr.loc[fr['CAREER LEVEL'] == cl, 'alert'] = 'Middle Management'
+    for cl in ["EX"]:
+        fr.loc[fr['CAREER LEVEL'] == cl, 'alert'] = 'Top Management'
+
+frame_a = [janhc_a, dechc_a, turn_a]
+Workbook()
+for i, dfa in enumerate(frame_a):
+    Range(i+1,"A1").value = pd.DataFrame(dfa.groupby(["Payroll_Country",'alert_us','U.S. FLSA'])["Employee_Number"].count())
+
+#new dataframes after making corrections to the previously merged data files   
+janhc_f = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\HRSS Turnover survey 2016\final data with attrib and hc term data.xlsx", sheetname = "Sheet1")
+dechc_f = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\HRSS Turnover survey 2016\final data with attrib and hc term data.xlsx", sheetname = "Sheet2")
+turn_f = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\HRSS Turnover survey 2016\final data with attrib and hc term data.xlsx", sheetname = "Sheet3")
+
+frame_f = [janhc_f, dechc_f, turn_f]
+Workbook()
+for i, dfa in enumerate(frame_a):
+    Range(i+1,"A1").value = pd.DataFrame(dfa.groupby(["Payroll_Country",'alert_us'])["Employee_Number"].count())
