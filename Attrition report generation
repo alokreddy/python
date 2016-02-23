@@ -1,0 +1,39 @@
+import pandas as pd
+from xlwings import Workbook, Range
+import itertools
+import functools
+from IPython.display import HTML
+
+er = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\Mercer Salary Movement Snapshot 2016\Oracle Employee Report 15-Feb-2016.xlsx")
+terminations = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\Mercer Salary Movement Snapshot 2016\Termination Report with Reasons.xlsx")
+jan_hc = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\Mercer Salary Movement Snapshot 2016\FTE Headcount Report_Jan 2015.xlsx")
+dec_hc = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\Mercer Salary Movement Snapshot 2016\FTE Headcount Report_Dec 2015.xlsx")
+
+#Do not the alter the ORDER of list
+df_list = [jan_hc, dec_hc, terminations]
+
+group_dict = dict()
+
+for item in df_list:
+    item.columns = [c.replace(" ","_") for c in item.columns]
+
+#only Voluntary terminations will be considered
+terminations = terminations[terminations.Termination_Type.isin(["Voluntary Termination"])]
+
+#Only regular and regular limited employees will be considered
+jan_hc = jan_hc[jan_hc.Assignment_Category.isin(["Regular","Regular Limited"])]
+dec_hc = dec_hc[dec_hc.Assignment_Category.isin(["Regular","Regular Limited"])]
+terminations = terminations[terminations.Assignment_Category.isin(["Regular","Regular Limited"])]
+
+df_list = [jan_hc, dec_hc, terminations]
+
+for i,itm in enumerate(df_list):
+    group_dict[i] = pd.DataFrame(itm.groupby(["Payroll_Country"])["Employee_Number"].count().reset_index())
+
+
+merge = functools.partial(pd.merge, how='outer', on = ["Payroll_Country"])
+df = functools.reduce(merge, group_dict.values())
+df.rename(columns={"Employee_Number_x" : "Head Count 1", "Employee_Number_y" : "Head Count 2" , "Employee_Number" : "Terminations"}, inplace=True)
+
+Workbook()
+Range("A1").value = df
