@@ -1,0 +1,147 @@
+
+# coding: utf-8
+
+# In[172]:
+
+get_ipython().magic(u'load_ext Cython')
+import pandas as pd
+from xlwings import Workbook, Range
+from IPython.display import HTML
+
+
+# In[159]:
+
+country = "Singapore"
+
+
+# In[173]:
+
+#Focal data inlcuding HR
+focalData = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\Towers Watson Vietnam 2016\Focal 2015 JvR & CCTMG Focal Summary for Approval.xlsx", sheetname="Employee Details")
+#Employee Report
+er = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\Towers Watson Vietnam 2016\Oracle Employee Report 23-Feb-2016.xlsx")
+#Terminations Data
+term = pd.read_csv(r"C:\Users\ReddyAl\Documents\Surveys\Towers Watson Vietnam 2016\Termination Report with Reasons 1 Jan 2015 to 30 Dec 2015.csv")
+#Full Time Emp HC data
+FTEHc_Start = pd.read_csv(r"C:\Users\ReddyAl\Documents\Surveys\Towers Watson Vietnam 2016\FTE Headcount Report 1 Jan 2015.csv")
+#Full Time Emp HC data
+FTEHc_End = pd.read_csv(r"C:\Users\ReddyAl\Documents\Surveys\Towers Watson Vietnam 2016\FTE Headcount Report 1 Jan 2016.csv")
+
+
+# In[161]:
+
+df_list = [er, focalData, term, FTEHc_End, FTEHc_Start]
+for dfItem in df_list:
+    dfItem.columns = [c.replace(" ","_") for c in dfItem.columns]
+    dfItem.columns = [c.replace("%","Perc") for c in dfItem.columns]
+
+focalData.Additional_Increase_Perc.fillna(0, inplace = True)
+
+
+# In[162]:
+
+for cl in ["Business Support", "Technical Support"]:
+        er.loc[er['Career_Band'] == cl, 'TW_CB'] = 'Technical and Business Support'
+for cl in ["Customer / Client Management and Sales", "Executive / Senior Management"]:
+        er.loc[er['Career_Band'] == cl, 'TW_CB'] = 'Executive'
+for cl in ["Production / Operations"]:
+        er.loc[er['Career_Band'] == cl, 'TW_CB'] = 'Production and Manual Labor'
+for cl in ["Professional"]:
+        er.loc[er['Career_Band'] == cl, 'TW_CB'] = 'Supervisory and Professional'
+for cl in ["Supervisory / Management"]:
+        er.loc[er['Career_Band'] == cl, 'TW_CB'] = 'Middle Manager and Senior Professional'
+
+
+# In[163]:
+
+pd.options.display.float_format = '{:,.2f}'.format
+df = pd.merge(focalData, er, on = "PID", how = "left")
+df.loc[(df.Additional_Increase_Reason=="Promotion"), 'Promotion_Perc'] = df["Additional_Increase_Perc"]        
+df.Promotion_Perc.fillna(0, inplace = True)
+total_inc = pd.DataFrame(df.groupby(["Payroll_Country_x", "TW_CB"])['Total_Increase_Perc'].mean().reset_index())
+
+#df1 = df[df.Additional_Increase_Reason.isin(["Promotion"])]
+add_inc = pd.DataFrame(df.groupby(["Payroll_Country_x", "TW_CB"])['Promotion_Perc'].mean().reset_index())
+Combo = pd.merge(total_inc,add_inc, how = "outer",on = ["Payroll_Country_x","TW_CB"])
+Combo["Without_AddInc"] = Combo["Total_Increase_Perc"] - Combo["Promotion_Perc"]
+#HTML(pd.DataFrame(df1.columns).to_html())
+#HTML(total_inc.to_html())
+#HTML(total_inc[total_inc.Payroll_Country_x.isin(["Singapore"])].to_html())
+HTML(Combo[Combo.Payroll_Country_x.isin([country])].to_html())
+
+
+# In[164]:
+
+total_inc_overAll = pd.DataFrame(df.groupby(["Payroll_Country_x"])['Total_Increase_Perc'].mean().reset_index())
+add_inc_overAll = pd.DataFrame(df.groupby(["Payroll_Country_x"])['Promotion_Perc'].mean().reset_index())
+Combo_overAll = pd.merge(total_inc_overAll,add_inc_overAll, how = "outer",on = ["Payroll_Country_x"])
+Combo_overAll["Without_AddInc"] = Combo_overAll["Total_Increase_Perc"] - Combo_overAll["Promotion_Perc"]
+HTML(Combo_overAll[Combo_overAll.Payroll_Country_x.isin([country])].to_html())
+
+
+# In[165]:
+
+FTEHc_Start = FTEHc_Start[FTEHc_Start.Payroll_Country.isin([country])]
+HTML(pd.DataFrame(FTEHc_Start.Payroll_Country.value_counts()).to_html())
+
+
+# In[166]:
+
+FTEHc_End = FTEHc_End[FTEHc_End.Payroll_Country.isin([country])]
+HTML(pd.DataFrame(FTEHc_End.Payroll_Country.value_counts()).to_html())
+
+
+# In[167]:
+
+er_JTCB = er[["Job_Title_Description","Career_Band"]]
+er_JTCB.drop_duplicates(inplace = True)
+er_JTCB.reset_index(drop = True)
+term = pd.merge(term, er_JTCB, on = "Job_Title_Description", how="left")
+FTEHc_Start = pd.merge(FTEHc_Start, er_JTCB, on = "Job_Title_Description", how="left")
+FTEHc_End = pd.merge(FTEHc_End, er_JTCB, on = "Job_Title_Description", how="left")
+frame_a = [FTEHc_Start, FTEHc_End, term]
+for fr in frame_a:
+    for cl in ["Business Support", "Technical Support"]:
+            fr.loc[er['Career_Band'] == cl, 'TW_CB'] = 'Technical and Business Support'
+    for cl in ["Customer / Client Management and Sales", "Executive / Senior Management"]:
+            fr.loc[er['Career_Band'] == cl, 'TW_CB'] = 'Executive'
+    for cl in ["Production / Operations"]:
+            fr.loc[er['Career_Band'] == cl, 'TW_CB'] = 'Production and Manual Labor'
+    for cl in ["Professional"]:
+            fr.loc[er['Career_Band'] == cl, 'TW_CB'] = 'Supervisory and Professional'
+    for cl in ["Supervisory / Management"]:
+            fr.loc[er['Career_Band'] == cl, 'TW_CB'] = 'Middle Manager and Senior Professional'
+
+
+# In[168]:
+
+headCountStart = pd.DataFrame(FTEHc_Start.groupby(["Payroll_Country","TW_CB"])["Job_Title_Description"].count().reset_index())
+headCountStart = headCountStart[headCountStart.Payroll_Country.isin([country])]
+HTML(headCountStart.to_html())
+
+
+# In[169]:
+
+headCountEnd = pd.DataFrame(FTEHc_End.groupby(["Payroll_Country","TW_CB"])["SBU"].count().reset_index())
+headCountEnd = headCountEnd[headCountEnd.Payroll_Country.isin([country])]
+HTML(headCountEnd.to_html())
+
+
+# In[170]:
+
+term_grp = pd.DataFrame(term.groupby(["Payroll_Country","Termination_Type","TW_CB"])["SBU"].count().reset_index())
+term_grp = term_grp[term_grp.Payroll_Country.isin([country])]
+HTML(term_grp.to_html())
+
+
+# In[171]:
+
+term_grp = pd.DataFrame(term.groupby(["Payroll_Country","Termination_Type"])["SBU"].count().reset_index())
+term_grp = term_grp[term_grp.Payroll_Country.isin([country])]
+HTML(term_grp.to_html())
+
+
+# In[ ]:
+
+
+
