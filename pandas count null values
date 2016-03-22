@@ -1,0 +1,13 @@
+def num_missing(x):
+  return sum(x.isnull())
+
+#Applying per column:
+print "Missing values per column:"
+print data.apply(num_missing, axis=0) #axis=0 defines that function is to be applied on each column
+
+#Applying per row:
+print "\nMissing values per row:"
+print data.apply(num_missing, axis=1).head() #axis=1 defines that function is to be applied on each row
+
+print data.apply(num_missing, axis=0)
+
