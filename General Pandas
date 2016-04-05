@@ -4,3 +4,17 @@ from pandas import DataFrame
 from IPython.display import HTML
 HTML(DataFrame(myList).to_html())
 
+####################################################################
+#using the python global() option to manipulate dataframes in Ipython
+
+#method to replace the spaces in all the data frames
+def replaceSpace(df_list):
+        df_list.columns = [c.replace(" ","_") for c in df_list.columns]
+
+#getting the list of the dataframes currently active in the Ipython notebook
+list_df = %who_ls DataFrame
+
+#using globals() to apply the above method to all the dataframes
+for i in list_df:
+        replaceSpace(globals()[i])
+
