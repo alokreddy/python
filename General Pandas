@@ -21,3 +21,8 @@ for i in list_df:
 ###################################################################
 #using izip to create a dict from dataframe columns
 region_dict = dict(izip(regions_table.EE_Country, regions_table.EE_Region))
+
+###################################################################
+#using dict to create a new column and add values into the column based on the dict
+for k, v in region_dict.iteritems():
+    dfa.loc[dfa["EE_Country"] == k, "Region"] = v
