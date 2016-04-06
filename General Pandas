@@ -36,5 +36,8 @@ df.loc[(df.Bonus_Percent_Override.notnull()), 'Bonus_Percent'] = df["Bonus_Perce
 #filtering columns based on the values in multiple columns
 er = er[er.Assignment_Category.isin(['Regular', 'Regular Limited'])& er.Payroll_Country.isin(['United States'])]
 
+#######################################################################
+#find the min or the max value in a dataframe column and filter the entire row
+only_us_mip.loc[only_us_mip.Annual_Salary_If_Full_time.idxmin()]
 
 
