@@ -44,3 +44,13 @@ only_us_mip.loc[only_us_mip.Annual_Salary_If_Full_time.idxmin()]
 #create salary ranges (or ranges from anyother numerical column) from a dataframe using groupby
 ranges = [0,40000,60000,80000,100000,125000,150000,175000,200000,1000000]
 salary_ranges = pd.DataFrame(tem.groupby(pd.cut(tem.Annual_Salary_If_Full_time, ranges))["Bonus_Percent"].mean())
+
+########################################################################
+#get a filename in the current directory with partial name
+filename = glob.glob( "".join([ os.getcwd(), "\\Oracle*.xlsx"]))
+os.path.basename(filename[0])
+
+
+
+
+
