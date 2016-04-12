@@ -56,5 +56,11 @@ os.path.basename(filename[0])
 df.loc[df.notnull().all(axis=1).argmax():] #find the first occurrence without duplicate indexes (dates)
 df.loc[df.notnull().all(axis=1).cummax():] #this will takecare of duplicate index values
 
+########################################################################
+#replace all the spaces, new line characters or anyother unnecessary characters from the column headers using this method
+#by adding the characters to be removed to the list
+def headerfiller(df):
+    for i in [" ","\n"]:
+        df.columns = [c.replace(i,"_") for c in df.columns ]
 
 
