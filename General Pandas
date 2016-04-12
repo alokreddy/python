@@ -51,6 +51,10 @@ filename = glob.glob( "".join([ os.getcwd(), "\\Oracle*.xlsx"]))
 os.path.basename(filename[0])
 
 
+########################################################################
+#finding the first row with non nan values
+df.loc[df.notnull().all(axis=1).argmax():] #find the first occurrence without duplicate indexes (dates)
+df.loc[df.notnull().all(axis=1).cummax():] #this will takecare of duplicate index values
 
 
 
