@@ -63,4 +63,32 @@ def headerfiller(df):
     for i in [" ","\n"]:
         df.columns = [c.replace(i,"_") for c in df.columns ]
 
+#####Better method for the above procedure
+#using string 
+
+#Sample Usage of translate, very pythonic method
+
+tbl = str.maketrans(' \n', '__')
+'a b c\n'.translate(tbl)
+
+try:
+    tbl = str.maketrans('_\n', '__')  # Python 3.x
+except AttributeError:
+    import string
+    tbl = string.maketrans('_\n', '__')  # Python 2.x
+
+def headerfiller(df):
+    df.columns = [c.translate(tbl) for c in df.columns]
+
+#######Same method using regex
+#using regex its is useful when a pattern needs to be spotted
+
+import re
+
+def headerfiller(df):
+    df.columns = [re.sub(r' \n', '_', c) for c in df.columns]
+
+#####same using str.replace method
+#easiest method gets the job done not as efficient as the previous methods
+df.columns.str.replace(' |\n', '_')
 
