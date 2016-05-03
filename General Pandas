@@ -92,3 +92,8 @@ def headerfiller(df):
 #easiest method gets the job done not as efficient as the previous methods
 df.columns.str.replace(' |\n', '_')
 
+#################################################################################
+##hack for setting the default encoding in Python 2.x to 'UTF-8'
+sys.getdefaultencoding()
+reload(sys)
+sys.setdefaultencoding('utf-8')
