@@ -72,10 +72,10 @@ tbl = str.maketrans(' \n', '__')
 'a b c\n'.translate(tbl)
 
 try:
-    tbl = str.maketrans('_\n', '__')  # Python 3.x
+    tbl = str.maketrans(' \n', '__')  # Python 3.x
 except AttributeError:
     import string
-    tbl = string.maketrans('_\n', '__')  # Python 2.x
+    tbl = string.maketrans(' \n', '__')  # Python 2.x
 
 def headerfiller(df):
     df.columns = [c.translate(tbl) for c in df.columns]
