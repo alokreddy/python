@@ -1,0 +1,32 @@
+import pandas as pd
+from IPython.display import HTML
+import string
+from pandas import ExcelWriter
+
+tbl = string.maketrans(' \n/', '___')
+#use sparingly as it will entirely ignore any errors araising from decoding from 'ascii'
+def headerfiller(df):
+    df.columns = [c.decode('ascii', errors ='ignore').encode('utf-8').translate(tbl) for c in df.columns]
+
+
+sh = pd.read_excel(r"C:\Users\ReddyAl\Documents\Surveys\Towers Watson CDB Pharma and Health Sciences Exec Pay 2016\Oracle Hierarchy Report 09-May-2016.xlsx")
+sh.columns = [c.decode('ascii', errors = 'ignore').encode('utf-8').translate(tbl) for c in sh.columns]
+l1 = pd.DataFrame(sh.Level_1_Supervisor_Number.value_counts())
+l2 = pd.DataFrame(sh.Level_2_Supervisor_Number.value_counts())
+l3 = pd.DataFrame(sh.Level_3_Supervisor_Number.value_counts())
+l4 = pd.DataFrame(sh.Level_4_Supervisor_Number.value_counts())
+l5 = pd.DataFrame(sh.Level_5_Supervisor_Number.value_counts())
+l6 = pd.DataFrame(sh.Level_6_Supervisor_Number.value_counts())
+l7 = pd.DataFrame(sh.Level_7_Supervisor_Number.value_counts())
+l8 = pd.DataFrame(sh.Level_8_Supervisor_Number.value_counts())
+l9 = pd.DataFrame(sh.Level_9_Supervisor_Number.value_counts())
+
+hlist = [l1,l2,l3,l4,l5,l6,l7,l8,l9]
+
+for i, item in enumerate(hlist):
+    item['Count'] = item['Level_' + str(i+1) + '_Supervisor_Number']
+    
+df_level = l1.append([l2,l3,l4,l5,l6,l7,l8,l9])
+writer = ExcelWriter('total direct reports.xlsx')
+df_level.to_excel(writer, 'data')
+writer.save()
