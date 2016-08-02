@@ -86,7 +86,7 @@ def headerfiller(df):
 import re
 
 def headerfiller(df):
-    df.columns = [re.sub(r' \n', '_', c) for c in df.columns]
+    df.columns = [re.sub(r' |\n', '_', c) for c in df.columns]
 
 #####same using str.replace method
 #easiest method gets the job done not as efficient as the previous methods
