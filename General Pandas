@@ -97,3 +97,10 @@ df.columns.str.replace(' |\n', '_')
 sys.getdefaultencoding()
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
+
+################################################################################
+text pivots in pandas
+
+jobHistory = pd.DataFrame(df.pivot_table(index=['PID'], columns='StartMonth', 
+                        values='Job_Title_Description', aggfunc = lambda x: ', '.join(x))).reset_index()
