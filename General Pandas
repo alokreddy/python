@@ -128,3 +128,10 @@ def percentile(n):
 df.groupby(['Country'])['Country_Visit_Over_Threshold','Verified__Sum'].agg({
         'Country_Visit_Over_Threshold':[np.median, np.count_nonzero]
         ,'Verified__Sum':[percentile(2.5), percentile(5),percentile(7.5),percentile(10), percentile(12.5)]})
+        
+####################################################################################
+#iterate over rows from pandas dataframe using itertuples and number index
+
+for rows in df.itertuples():
+    mail.To = rows[4]
+    mail.Attachments.Add(Source = path + rows[3])
